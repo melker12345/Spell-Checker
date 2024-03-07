@@ -29,63 +29,35 @@ var Typo;
     var path;
 
     // Loop-control variables.
-    var i, j, _len, _jlen;
+		var i, j, _len, _jlen;
 
-    if (dictionary) {
-      self.dictionary = dictionary;
 
-      // If the data is preloaded, just setup the Typo object.
-      if (affData && wordsData) {
-        setup();
-      }
-      // Loading data for Chrome extentions.
-      else if (
-        typeof window !== "undefined" &&
-        "chrome" in window &&
-        "extension" in window.chrome &&
-        "getURL" in window.chrome.extension
-      ) {
-        if (settings.dictionaryPath) {
-          path = settings.dictionaryPath;
-        } else {
-          path = "typo/dictionaries";
-        }
+		if (dictionary) {
+			self.dictionary = dictionary;
+			
+			if (!affData || !wordsData) { // If dictionary data isn't preloaded
+				// Determine the base path for extension files
+				let basePath = browser.runtime.getURL(""); // Gets the root path of your extension
+				
+				// Construct the full paths for the .aff and .dic files
+				let affPath = basePath + dictionary + ".aff";
+				let dicPath = basePath + dictionary + ".dic";
+				
+				// Load the .aff file if it's not already loaded
+				if (!affData) {
+					readDataFile(affPath, setAffData);
+				}
+				
+				// Load the .dic file if it's not already loaded
+				if (!wordsData) {
+					readDataFile(dicPath, setWordsData);
+				}
+			}
+		}
 
-        if (!affData)
-          readDataFile(
-            chrome.extension.getURL(
-              path + "/" + dictionary + "/" + dictionary + ".aff"
-            ),
-            setAffData
-          );
-        if (!wordsData)
-          readDataFile(
-            chrome.extension.getURL(
-              path + "/" + dictionary + "/" + dictionary + ".dic"
-            ),
-            setWordsData
-          );
-      } else {
-        if (settings.dictionaryPath) {
-          path = settings.dictionaryPath;
-        } else if (typeof __dirname !== "undefined") {
-          path = __dirname + "/dictionaries";
-        } else {
-          path = "./dictionaries";
-        }
 
-        if (!affData)
-          readDataFile(
-            path + "/" + dictionary + "/" + dictionary + ".aff",
-            setAffData
-          );
-        if (!wordsData)
-          readDataFile(
-            path + "/" + dictionary + "/" + dictionary + ".dic",
-            setWordsData
-          );
-      }
-    }
+
+
 
     function readDataFile(url, setFunc) {
       var response = self._readFile(url, null, settings.asyncLoad);

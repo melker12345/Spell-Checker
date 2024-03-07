@@ -2,7 +2,7 @@
   "manifest_version": 2,
   "name": "SpellCheck Fixer",
   "version": "1.0",
-  "description": "Quickly fix spelling mistakes with Ctrl+Ö.",
+  "description": "Quickly fix spelling mistakes with Shift+U.",
   "permissions": [
     "activeTab"
   ],
@@ -15,10 +15,15 @@
       "js": ["typo.js", "contentScript.js"]
     }
   ],
+  "web_accessible_resources": [
+    "typo.js",
+    "en_US.aff",
+    "en_US.dic"
+  ],
   "commands": {
     "fix-spelling": {
       "suggested_key": {
-        "default": "Ctrl+Shift+U"
+        "default": "Ctrl+1"
       },
       "description": "Fix Spelling Mistake using keyboard shortcut in Firefox"
     }
