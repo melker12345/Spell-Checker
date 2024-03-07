@@ -10,7 +10,6 @@ PROJECT STRUCTURE:
   typo.js
 
 GOAL: 
-
 - it registers keypresses and logs the word before the cursor to the console
 
 - check spelling of the word to the left of the cursor position
@@ -21,11 +20,11 @@ FIX:
 - if not in a text input field, it should not log anything to the console
   - it currently logs the wole text within the page content to the console
 
+-on Windows: uncaught exception: Dictionary not loaded. line 99
 
 INFO:
 
 - What i mean by check spelling is that "on what ever word the user presses Ctrl+1, the word should be checked for spelling and the 4 best suggestions should be displayed in a menu in the center of the screen."
-
 
 - the typo.js file is a library that is used to check spelling
 - the en_us.aff and en_us.dic files are used by the typo.js library to check spelling
@@ -96,7 +95,7 @@ document.addEventListener("keydown", async (event) => {
       }
     }
   }
-});
+}); // on Windows: uncaught exception: Dictionary not loaded.
 
 function findWordAtPosition(text, position) {
   let start = text.lastIndexOf(" ", position - 1) + 1;
