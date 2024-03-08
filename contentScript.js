@@ -141,17 +141,26 @@ function displaySuggestionsMenu(suggestions, start, end) {
     suggestionMenu.style.top = "50%";
     suggestionMenu.style.left = "50%";
     suggestionMenu.style.transform = "translate(-50%, -50%)";
-    suggestionMenu.style.border = "1px solid black";
-    suggestionMenu.style.backgroundColor = "white";
     suggestionMenu.style.zIndex = "10000";
+    
+    suggestionMenu.style.textAlign = "center";
+
+    suggestionMenu.style.border = "#3088fb solid 1px";
+    suggestionMenu.style.backgroundColor = "black";
+    suggestionMenu.style.width = "325px";
+    
+    suggestionMenu.style.color = "#FFF";
     suggestionMenu.style.padding = "10px";
+    suggestionMenu.style.fontSize = "28px";
+    
+
 
     // Add suggestions to the menu
     suggestions.forEach((suggestion, index) => {
         const suggestionItem = document.createElement("div");
         suggestionItem.textContent = suggestion;
         suggestionItem.setAttribute("data-index", index);
-        suggestionItem.style.padding = "5px";
+        suggestionItem.style.margin = "5px";
 
         suggestionItem.addEventListener("click", () => {
             replaceWordInInput(suggestion, wordStartPosition, wordEndPosition);
