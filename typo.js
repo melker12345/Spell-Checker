@@ -1,63 +1,50 @@
-
 var Typo;
 
 (function () {
   "use strict";
 
-
   Typo = function (dictionary, affData, wordsData, settings) {
     settings = settings || {};
 
     this.dictionary = null;
-
     this.rules = {};
     this.dictionaryTable = {};
-
     this.compoundRules = [];
     this.compoundRuleCodes = {};
-
     this.replacementTable = [];
-
     this.flags = settings.flags || {};
-
     this.memoized = {};
-
     this.loaded = false;
-
+    
     var self = this;
-
     var path;
 
     // Loop-control variables.
-		var i, j, _len, _jlen;
+    var i, j, _len, _jlen;
 
+    if (dictionary) {
+      self.dictionary = dictionary;
 
-		if (dictionary) {
-			self.dictionary = dictionary;
-			
-			if (!affData || !wordsData) { // If dictionary data isn't preloaded
-				// Determine the base path for extension files
-				let basePath = browser.runtime.getURL(""); // Gets the root path of your extension
-				
-				// Construct the full paths for the .aff and .dic files
-				let affPath = basePath + dictionary + ".aff";
-				let dicPath = basePath + dictionary + ".dic";
-				
-				// Load the .aff file if it's not already loaded
-				if (!affData) {
-					readDataFile(affPath, setAffData);
-				}
-				
-				// Load the .dic file if it's not already loaded
-				if (!wordsData) {
-					readDataFile(dicPath, setWordsData);
-				}
-			}
-		}
+      if (!affData || !wordsData) {
+        // If dictionary data isn't preloaded
+        // Determine the base path for extension files
+        let basePath = browser.runtime.getURL(""); // Gets the root path of your extension
 
+        // Construct the full paths for the .aff and .dic files
+        let affPath = basePath + dictionary + ".aff";
+        let dicPath = basePath + dictionary + ".dic";
 
+        // Load the .aff file if it's not already loaded
+        if (!affData) {
+          readDataFile(affPath, setAffData);
+        }
 
-
+        // Load the .dic file if it's not already loaded
+        if (!wordsData) {
+          readDataFile(dicPath, setWordsData);
+        }
+      }
+    }
 
     function readDataFile(url, setFunc) {
       var response = self._readFile(url, null, settings.asyncLoad);
@@ -206,7 +193,6 @@ var Typo;
         }
       }
     },
-
 
     _parseAFF: function (data) {
       var rules = {};
@@ -424,7 +410,6 @@ var Typo;
       return dictionaryTable;
     },
 
-    
     _removeDicComments: function (data) {
       // I can't find any official documentation on it, but at least the de_DE
       // dictionary uses tab-indented lines as comments.
@@ -464,7 +449,6 @@ var Typo;
       }
     },
 
-    
     _applyRule: function (word, rule) {
       var entries = rule.entries;
       var newWords = [];
@@ -515,7 +499,6 @@ var Typo;
       return newWords;
     },
 
-    
     check: function (aWord) {
       if (!this.loaded) {
         throw "Dictionary not loaded.";
@@ -647,7 +630,6 @@ var Typo;
       return false;
     },
 
-    
     alphabet: "",
 
     suggest: function (word, limit) {

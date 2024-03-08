@@ -1,37 +1,39 @@
 /*
-PROJECT STRUCTURE:
+##GOAL: 
+This browser extension that checks spelling and provides suggestions for the word that is being checked.
 
-/firefox-extension
-  background.js
-  contentScript.js
-  en_us.aff
-  en_us.dic
-  manifest.json
-  typo.js
+- Register keypresses and take in the word before the cursor. [DONE]
+- Check spelling of the word to the left of the cursor position. [DONE]
+- On keypress a menu should open containing the 4 best suggestions. [DONE]
+- On selection of a suggestion the word should be replaced with the selected suggestion. [DONE]
 
-GOAL: 
-- it registers keypresses and logs the word before the cursor to the console
+##FIX:
+- If not in a text input field, it should not log anything to the console. [FIXED]
+  - It currently logs the wole text within the page content to the console. 
 
-- check spelling of the word to the left of the cursor position
-- on keypress a menu should open containing the 4 best suggestions
-- on selection of a suggestion the word should be replaced with the selected suggestion
+- On Windows: uncaught exception: Dictionary not loaded. line 99.[ ]
+  - This might be because firefow on windows already have crtl+1 as a shortcut (should not be).
+  
+  - What's the difference between firefox on windows and on linux?
+    - Why does it work on linux but not on windows?
+    - How does windows effect the addons?
+      - Different versions of firefox?  
 
-FIX:
-- if not in a text input field, it should not log anything to the console
-  - it currently logs the wole text within the page content to the console
+- The menu should be positioned in the center of the screen. [FIXED]
+- Menu need to be cleared if no word is selected. [ ]
+- Cycle through the suggestions using the h j k l keys and choose selection with space or enter. [ ]
+  - Indecate the selected suggestion border 1px solid. [ ]
+- Escape should close the menu and not replace the word. [ ]
 
--on Windows: uncaught exception: Dictionary not loaded. line 99
+##INFO:
 
-INFO:
+- What i mean by check spelling is that on what ever word the user presses Ctrl+1, the word should be checked for spelling and the 4 best suggestions should be displayed in a menu in the center of the screen.
+- the typo.js file is a library that is used to check spelling.
+- the en_us.aff and en_us.dic files are used by the typo.js library to check spelling.
+- the typo.js library is attached to the window object.
 
-- What i mean by check spelling is that "on what ever word the user presses Ctrl+1, the word should be checked for spelling and the 4 best suggestions should be displayed in a menu in the center of the screen."
-
-- the typo.js file is a library that is used to check spelling
-- the en_us.aff and en_us.dic files are used by the typo.js library to check spelling
-- the typo.js library is attached to the window object
-
-- I want to use the typo.js library to check spelling
-- If the user presses Ctrl+1, I want to open a menu with the 4 best suggestions e.i the 4 words closest to the word that is being checked
+- I want to use the typo.js library to check spelling.
+- If the user presses Ctrl+1, I want to open a menu with the 4 best suggestions e.i the 4 words closest to the word that is being checked.
 
 */
 
@@ -66,10 +68,9 @@ document.addEventListener("keydown", async (event) => {
     const activeElement = document.activeElement;
     let cursorPosition = activeElement.selectionStart;
 
-    // text should be just one word
     let text = activeElement.value;
-    console.log("text: ", activeElement.value);
     let wordDetails = findWordAtPosition(text, cursorPosition);
+    console.log("word: ", wordDetails.word);
 
     if (wordDetails && wordDetails.word && typo) {
       let suggestions = typo.suggest(wordDetails.word, 4); // Get top 4 suggestions
@@ -118,11 +119,13 @@ function createSuggestionsMenu(suggestions, callback) {
   const menu = document.createElement("div");
   // Set menu styles to position it appropriately on the page
   menu.style.position = "absolute";
-  menu.style.left = "100px"; // Adjust as necessary
-  menu.style.top = "100px"; // Adjust as necessary
+  menu.style.left = "50%";
+  menu.style.top = "50%";
+  menu.style.transform = "translate(-50%, -50%)";
   menu.style.backgroundColor = "white";
   menu.style.border = "1px solid black";
-  menu.style.padding = "5px";
+  menu.style.fontSize = "22px";
+  menu.style.padding = "5px 20px";
 
   suggestions.forEach((suggestion) => {
     const item = document.createElement("div");
