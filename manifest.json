@@ -15,6 +15,7 @@
       "js": ["typo.js", "contentScript.js"]
     }
   ],
+  
   "web_accessible_resources": [
     "typo.js",
     "en_US.aff",
@@ -23,7 +24,7 @@
   "commands": {
     "fix-spelling": {
       "suggested_key": {
-        "default": "Ctrl+1"
+        "default": "Ctrl+Alt+D"
       },
       "description": "Fix Spelling Mistake using keyboard shortcut in Firefox"
     }

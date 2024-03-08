@@ -1,146 +1,226 @@
 /*
-##GOAL: 
-This browser extension that checks spelling and provides suggestions for the word that is being checked.
+PROJECT STRUCTURE:
 
-- Register keypresses and take in the word before the cursor. [DONE]
-- Check spelling of the word to the left of the cursor position. [DONE]
-- On keypress a menu should open containing the 4 best suggestions. [DONE]
-- On selection of a suggestion the word should be replaced with the selected suggestion. [DONE]
+/firefox-extension
+  background.js
+  contentScript.js
+  en_us.aff
+  en_us.dic
+  manifest.json
+  typo.js
 
-##FIX:
-- If not in a text input field, it should not log anything to the console. [FIXED]
-  - It currently logs the wole text within the page content to the console. 
+GOAL: 
+- Register keypress crtl+Alt+D
+- check spelling of the word to the left of the cursor position
+- on keypress a menu should open containing the 4 best suggestions
+- on selection of a suggestion the word should be replaced with the selected suggestion
 
-- On Windows: uncaught exception: Dictionary not loaded. line 99.[ ]
-  - This might be because firefow on windows already have crtl+1 as a shortcut (should not be).
-  
-  - What's the difference between firefox on windows and on linux?
-    - Why does it work on linux but not on windows?
-    - How does windows effect the addons?
-      - Different versions of firefox?  
+FIX:
+- if not in a text input field, it should not log anything to the console
+  - it currently logs the wole text within the page content to the console
 
-- The menu should be positioned in the center of the screen. [FIXED]
-- Menu need to be cleared if no word is selected. [ ]
-- Cycle through the suggestions using the h j k l keys and choose selection with space or enter. [ ]
-  - Indecate the selected suggestion border 1px solid. [ ]
-- Escape should close the menu and not replace the word. [ ]
+INFO:
 
-##INFO:
+- the typo.js file is from the library typo.js that is used to check spelling
+- the en_us.aff and en_us.dic files are used by the typo.js library to check spelling
+- the typo.js library is attached to the window object
 
-- What i mean by check spelling is that on what ever word the user presses Ctrl+1, the word should be checked for spelling and the 4 best suggestions should be displayed in a menu in the center of the screen.
-- the typo.js file is a library that is used to check spelling.
-- the en_us.aff and en_us.dic files are used by the typo.js library to check spelling.
-- the typo.js library is attached to the window object.
-
-- I want to use the typo.js library to check spelling.
-- If the user presses Ctrl+1, I want to open a menu with the 4 best suggestions e.i the 4 words closest to the word that is being checked.
+- I want to use the typo.js library to check spelling
+- If the user presses Ctrl+Alt+D, I want to open a menu with the 4 best suggestions e.i the 4 words closest to the word that is being checked
 
 */
 
+// Globally declare the typo variable to ensure it's accessible throughout the script.
 let typo;
 
-async function loadDictionary() {
-  const affData = await fetch(browser.runtime.getURL("en_us.aff")).then(
-    (response) => response.text().catch((error) => console.log("error: ", error))
-  );
-  const dicData = await fetch(browser.runtime.getURL("en_US.dic")).then(
-    (response) => response.text().catch((error) => console.log("error: ", error))
-  );
-  
-  console.log("Typo: ", Typo);
-  if (Typo !== undefined) {
-    typo = new Typo("en_US", affData, dicData, { platform: "any" });
-    console.log("Typo is attached to the window.");
-  } else {
-    console.log("Typo is not attached to the window.");
-  }
-}
-console.log("Typo:");
+async function initializeTypo() {
+    const affURL = chrome.runtime.getURL("en_us.aff");
+    const dicURL = chrome.runtime.getURL("en_us.dic");
 
-// once i call this function, AbortError: The operation was aborted. 
-// my guess is that the fetch request is being aborted
-loadDictionary();
+    try {
+        const [affData, dicData] = await Promise.all([
+            fetch(affURL).then((res) => res.text()),
+            fetch(dicURL).then((res) => res.text()),
+        ]);
 
-document.addEventListener("keydown", async (event) => {
-  if (event.ctrlKey && event.key === "1") {
-    console.log("Ctrl+1 was pressed");
-
-    const activeElement = document.activeElement;
-    let cursorPosition = activeElement.selectionStart;
-
-    let text = activeElement.value;
-    let wordDetails = findWordAtPosition(text, cursorPosition);
-    console.log("word: ", wordDetails.word);
-
-    if (wordDetails && wordDetails.word && typo) {
-      let suggestions = typo.suggest(wordDetails.word, 4); // Get top 4 suggestions
-
-      if (suggestions.length > 0) {
-       
-
-        // Create a suggestions menu
-        const suggestionsMenu = createSuggestionsMenu(
-          suggestions,
-          (selectedSuggestion) => {
-            replaceWordAtPosition(
-              activeElement,
-              wordDetails.start,
-              wordDetails.end,
-              selectedSuggestion
-            );
-          }
-        );
-
-        // Append the suggestions menu to the body
-        document.body.appendChild(suggestionsMenu);
-      }
+        // Initialize Typo.js with loaded dictionary data and assign it to the global variable
+        typo = new Typo("en_US", affData, dicData);
+        console.log("Typo initialized successfully");
+    } catch (error) {
+        console.error("Failed to load and initialize Typo.js:", error);
     }
-  }
-}); // on Windows: uncaught exception: Dictionary not loaded.
-
-function findWordAtPosition(text, position) {
-  let start = text.lastIndexOf(" ", position - 1) + 1;
-  let end = text.indexOf(" ", position);
-  end = end === -1 ? text.length : end;
-  return { word: text.substring(start, end), start, end };
 }
 
-function replaceWordAtPosition(element, start, end, newWord) {
-  let text = element.value || element.textContent;
-  let newText = text.substring(0, start) + newWord + text.substring(end);
-  if ("value" in element) {
-    element.value = newText;
+// Ensure Typo.js initialization is triggered as soon as possible.
+initializeTypo();
+
+
+
+async function loadDictionaryFiles() {
+    try {
+        const [affData, dicData] = await Promise.all([
+            fetch(chrome.runtime.getURL("en_us.aff")).then((response) =>
+                response.text()
+            ),
+            fetch(chrome.runtime.getURL("en_us.dic")).then((response) =>
+                response.text()
+            ),
+        ]);
+
+        // Initialize Typo.js with loaded dictionary data
+        window.typo = new Typo("en_US", affData, dicData);
+    } catch (error) {
+        console.error("Failed to load and initialize Typo.js:", error);
+    }
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+    // Loading dictionary files
+    loadDictionaryFiles();
+});
+
+
+document.addEventListener("keydown", function (e) {
+    // Check if the focus is on a text input field or textarea.
+    if (!isTextInputField(document.activeElement)) {
+        return; // Do nothing if it's not a text input field.
+    }
+
+    // Detect Ctrl+Alt+D keystroke.
+    if (e.ctrlKey && e.altKey && e.key.toLowerCase() === "d") {
+        e.preventDefault(); // Prevent the default action for this combination.
+        const cursorPosition = document.activeElement.selectionStart;
+        const textValue = document.activeElement.value;
+        const wordToLeft = getWordToLeftOfCursor(textValue, cursorPosition);
+
+        if (wordToLeft.word) {
+          checkSpellingAndGetSuggestions(wordToLeft.word, wordToLeft.start, wordToLeft.end);
+        }
+    }
+});
+function isTextInputField(element) {
+    return (
+        element.tagName.toLowerCase() === "input" ||
+        element.tagName.toLowerCase() === "textarea"
+    );
+}
+
+function getWordToLeftOfCursor(text, position) {
+    const leftText = text.substring(0, position);
+    const start = leftText.search(/\S+$/); // Find the start of the last word to the left of the cursor
+    const end = position;
+    const word = leftText.substring(start, position);
+    return { word, start, end };
+}
+
+function checkSpellingAndGetSuggestions(word, start, end) {
+  // Ensure `typo` is defined before attempting to use it.
+  if (typeof typo !== "undefined" && typo.check) {
+      if (!typo.check(word)) {
+          const suggestions = typo.suggest(word, 4); // Get up to 4 suggestions.
+          displaySuggestionsMenu(suggestions, start, end);
+      }
   } else {
-    element.textContent = newText;
+      console.error('Typo.js is not fully initialized.');
   }
 }
+let currentIndex = -1; // Global index to keep track of the current selected suggestion
+let suggestionsArray = []; // Global array to keep the suggestions
+let wordStartPosition;
+let wordEndPosition;
 
-function createSuggestionsMenu(suggestions, callback) {
-  const menu = document.createElement("div");
-  // Set menu styles to position it appropriately on the page
-  menu.style.position = "absolute";
-  menu.style.left = "50%";
-  menu.style.top = "50%";
-  menu.style.transform = "translate(-50%, -50%)";
-  menu.style.backgroundColor = "white";
-  menu.style.border = "1px solid black";
-  menu.style.fontSize = "22px";
-  menu.style.padding = "5px 20px";
+function displaySuggestionsMenu(suggestions, start, end) {
+    // Keeping reference for replacing the word
+    wordStartPosition = start;
+    wordEndPosition = end;
 
-  suggestions.forEach((suggestion) => {
-    const item = document.createElement("div");
-    item.textContent = suggestion;
-    item.style.cursor = "pointer";
-    item.addEventListener("click", () => {
-      callback(suggestion);
-      document.body.removeChild(menu); // Remove the menu after selection
+    // Create suggestion menu container
+    const suggestionMenu = document.createElement("div");
+    suggestionMenu.setAttribute("id", "suggestionMenu");
+    suggestionMenu.style.position = "absolute";
+    suggestionMenu.style.top = "50%";
+    suggestionMenu.style.left = "50%";
+    suggestionMenu.style.transform = "translate(-50%, -50%)";
+    suggestionMenu.style.border = "1px solid black";
+    suggestionMenu.style.backgroundColor = "white";
+    suggestionMenu.style.zIndex = "10000";
+    suggestionMenu.style.padding = "10px";
+
+    // Add suggestions to the menu
+    suggestions.forEach((suggestion, index) => {
+        const suggestionItem = document.createElement("div");
+        suggestionItem.textContent = suggestion;
+        suggestionItem.setAttribute("data-index", index);
+        suggestionItem.style.padding = "5px";
+
+        suggestionItem.addEventListener("click", () => {
+            replaceWordInInput(suggestion, wordStartPosition, wordEndPosition);
+            closeSuggestionMenu();
+        });
+
+        suggestionMenu.appendChild(suggestionItem);
     });
-    menu.appendChild(item);
-  });
 
-  document.body.appendChild(menu);
+    currentIndex = -1; // Reset for new suggestions
+    suggestionsArray = suggestions; // Store suggestions globally
+    document.body.appendChild(suggestionMenu);
+
+    // Registering keydown event listener for navigation in suggestions
+    document.addEventListener("keydown", navigateSuggestions);
 }
-console.log(
-  "this is an indecation of the contentScript.js file being loaded.",
-  typo
-);
+
+function replaceWordInInput(word, start, end) {
+    const inputElem = document.activeElement;
+    const originalValue = inputElem.value;
+    const newValue =
+        originalValue.substring(0, start) + word + originalValue.substring(end);
+    inputElem.value = newValue;
+    const newPosition = start + word.length;
+    inputElem.setSelectionRange(newPosition, newPosition);
+}
+
+function navigateSuggestions(e) {
+    if (e.key === "j") {
+        // Move down
+        e.preventDefault();
+        currentIndex = (currentIndex + 1) % suggestionsArray.length;
+        updateSuggestionHighlight();
+    } else if (e.key === "k") {
+        // Move up
+        e.preventDefault();
+        currentIndex =
+            (currentIndex - 1 + suggestionsArray.length) %
+            suggestionsArray.length;
+        updateSuggestionHighlight();
+    } else if (e.key === " " && currentIndex >= 0) {
+        // Space to select
+        e.preventDefault();
+        replaceWordInInput(
+            suggestionsArray[currentIndex],
+            wordStartPosition,
+            wordEndPosition
+        );
+        closeSuggestionMenu();
+    }
+}
+
+function updateSuggestionHighlight() {
+    const menu = document.getElementById("suggestionMenu");
+    if (!menu) return;
+
+    Array.from(menu.children).forEach((child, index) => {
+        if (index === currentIndex) {
+            child.style.border = "1px solid blue";
+        } else {
+            child.style.border = "none";
+        }
+    });
+}
+
+function closeSuggestionMenu() {
+    const menu = document.getElementById("suggestionMenu");
+    if (menu) {
+        menu.remove();
+    }
+    document.removeEventListener("keydown", navigateSuggestions); // Important to remove the listener
+}
