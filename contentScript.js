@@ -116,7 +116,7 @@ function displaySuggestionsMenu(suggestions, start, end) {
     suggestionMenu.style.textAlign = 'center';
     suggestionMenu.style.display = 'border-box';
     suggestionMenu.style.border = '#3088fb solid 1px';
-    suggestionMenu.style.backgroundColor = 'black';
+    suggestionMenu.style.backgroundColor = '#171d20';
     suggestionMenu.style.width = '200px';
     suggestionMenu.style.color = '#FFF';
     suggestionMenu.style.padding = '0px 25px';
