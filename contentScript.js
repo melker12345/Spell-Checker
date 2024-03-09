@@ -1,42 +1,9 @@
-/*
-PROJECT STRUCTURE:
 
-/firefox-extension
-  background.js
-  contentScript.js
-  en_us.aff
-  en_us.dic
-  manifest.json
-  typo.js
-
-GOAL: 
-- Register keypress crtl+Alt+D
-- check spelling of the word to the left of the cursor position
-- on keypress a menu should open containing the 4 best suggestions
-- on selection of a suggestion the word should be replaced with the selected suggestion
-
-FIX:
-- if not in a text input field, it should not log anything to the console
-  - it currently logs the wole text within the page content to the console
-
-INFO:
-
-- the typo.js file is from the library typo.js that is used to check spelling
-- the en_us.aff and en_us.dic files are used by the typo.js library to check spelling
-- the typo.js library is attached to the window object
-
-- I want to use the typo.js library to check spelling
-- If the user presses Ctrl+Alt+D, I want to open a menu with the 4 best suggestions e.i the 4 words closest to the word that is being checked
-
-*/
-
-// Globally declare the typo variable to ensure it's accessible throughout the script.
 let typo;
 
 async function initializeTypo() {
-    const affURL = chrome.runtime.getURL("en_us.aff");
-    const dicURL = chrome.runtime.getURL("en_us.dic");
-
+    const affURL = browser.runtime.getURL("en_US.aff");
+    const dicURL = browser.runtime.getURL("en_US.dic");
     try {
         const [affData, dicData] = await Promise.all([
             fetch(affURL).then((res) => res.text()),
@@ -59,10 +26,10 @@ initializeTypo();
 async function loadDictionaryFiles() {
     try {
         const [affData, dicData] = await Promise.all([
-            fetch(chrome.runtime.getURL("en_us.aff")).then((response) =>
+            fetch(chrome.runtime.getURL("en_US.aff")).then((response) =>
                 response.text()
             ),
-            fetch(chrome.runtime.getURL("en_us.dic")).then((response) =>
+            fetch(chrome.runtime.getURL("en_US.dic")).then((response) =>
                 response.text()
             ),
         ]);
@@ -144,13 +111,13 @@ function displaySuggestionsMenu(suggestions, start, end) {
     suggestionMenu.style.zIndex = "10000";
     
     suggestionMenu.style.textAlign = "center";
-
+    suggestionMenu.style.display = "border-box";
     suggestionMenu.style.border = "#3088fb solid 1px";
     suggestionMenu.style.backgroundColor = "black";
     suggestionMenu.style.width = "325px";
     
     suggestionMenu.style.color = "#FFF";
-    suggestionMenu.style.padding = "10px";
+    suggestionMenu.style.padding = "25px";
     suggestionMenu.style.fontSize = "28px";
     
 
@@ -160,7 +127,7 @@ function displaySuggestionsMenu(suggestions, start, end) {
         const suggestionItem = document.createElement("div");
         suggestionItem.textContent = suggestion;
         suggestionItem.setAttribute("data-index", index);
-        suggestionItem.style.margin = "5px";
+        suggestionItem.style.margin = "10px";
 
         suggestionItem.addEventListener("click", () => {
             replaceWordInInput(suggestion, wordStartPosition, wordEndPosition);
