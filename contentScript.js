@@ -1,18 +1,8 @@
 /*
 FEATURES TO ADD:
-- User should be able to press ``Esc`` to close the suggestion menu.
-- User should be able to press ``Enter`` to select a suggestion.
+- User should be able to press ``Esc`` and ``q`` to close the suggestion menu but if the menu is not open, the key press should work as usual.
+- User should be able to press ``Enter`` to select a suggestion but not emmit it's default action. e.i. if the suggestion menu is open, the ``Enter`` key should replace the word in the input field with the selected suggestion but not submit the form. 
 - If no suggestions are available, the suggestion menu should not be displayed. 
-
-- When menu is open 
- - The user should not be able to type in the input field.
- - The user should not be able to switch "focusable area" using the keyboard. 
-
-
-LOW PRIORITY FEATURES DON'T ADD NOW:
-- Load time for longer words are a bit slow.
-- Allow the user to set the keybinding for opening the suggestion menu and navigating the menu.
- - This could be set in the settings for the add-on.
 
 */
 
@@ -51,6 +41,13 @@ async function loadDictionaryFiles() {
 
 document.addEventListener("DOMContentLoaded", loadDictionaryFiles);
 
+function isSpellCheckEligible(element) {
+    const nodeName = element.nodeName.toLowerCase();
+    const isEditable = element.isContentEditable;
+
+    return nodeName === "input" || nodeName === "textarea" || isEditable;
+}
+
 document.addEventListener("keydown", function (e) {
     if (!isTextInputField(document.activeElement)) return;
 
@@ -72,7 +69,7 @@ function isTextInputField(element) {
 
 function getWordToLeftOfCursor(text, position) {
     const leftText = text.substring(0, position);
-    const start = leftText.search(/\S+$/); // Find the start of the last word to the left of the cursor
+    const start = leftText.search(/\S+$/); 
     const end = position;
     const word = leftText.substring(start, position);
     return { word, start, end };
@@ -157,20 +154,23 @@ function navigateSuggestions(e) {
         e.preventDefault();
         currentIndex = (currentIndex + 1) % suggestionsArray.length;
         updateSuggestionHighlight();
+
     } else if (e.key === 'k') {
         e.preventDefault();
         currentIndex = (currentIndex - 1 + suggestionsArray.length) % suggestionsArray.length;
         updateSuggestionHighlight();
+        
     } else if (e.key === 'Enter' && currentIndex >= 0) {
         e.preventDefault();
         replaceWordInInput(suggestionsArray[currentIndex], wordStartPosition, wordEndPosition);
         closeSuggestionMenu();
+
     }else if (e.key === 'Tab' && currentIndex >= 0) {
         e.preventDefault();
         replaceWordInInput(suggestionsArray[currentIndex], wordStartPosition, wordEndPosition);
         closeSuggestionMenu();
+
     }else if (e.key === ' ' && currentIndex >= 0) {
-        e.preventDefault();
         replaceWordInInput(suggestionsArray[currentIndex], wordStartPosition, wordEndPosition);
         closeSuggestionMenu();
     }
@@ -179,7 +179,7 @@ function navigateSuggestions(e) {
 function updateSuggestionHighlight() {
     const menu = document.getElementById('suggestionMenu');
     Array.from(menu.children).forEach((child, index) => {
-        child.style.border = index === currentIndex ? '1px solid blue' : 'none';
+        child.style.border = index === currentIndex ? '1px solid #3088fb' : 'none';
     });
 }
 
@@ -194,7 +194,7 @@ function closeSuggestionMenu() {
 }
 
 function preventFocusChange(e) {
-    if (['Tab', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+    if (['Tab', 'Enter', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
         e.preventDefault();
     }
 }
