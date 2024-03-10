@@ -17,13 +17,10 @@ Currently, you have to clone the repo and load it as a temporary add-on. To load
 2. **Navigate Suggestions**: If there are spelling suggestions, they will be displayed in a menu at the center of the screen. Use the following keys to navigate:
     - `j`: Move down through the list of suggestions.
     - `k`: Move up through the list of suggestions.
-3. **Select a Suggestion**: To replace the word with a selected suggestion, navigate to the desired suggestion using `j` and `k`, then press `Space` to select it.
+3. **Select a Suggestion**: To replace the word with a selected suggestion, navigate to the desired suggestion using `j` and `k`, then press `Space`, `Enter` or `Tab` to select it. `Esc` will close the menu. 
 
 ## Troubleshooting
-
-- **Nothing happening**: "Typo initialized successfully" is the only thing being logged, If the initialization was successful (fresh install works some times), you might need to remap what keys are being used.
-    - **Remapping Keys**: Change `if (e.ctrlKey && e.altKey && e.key.toLowerCase() === "d")` line 58 in contentScript.js and in manifest.json.  
-- **Typo.js Not Initialized**: Ensure that all necessary files (`typo.js`, `en_us.aff`, `en_us.dic`) are correctly placed within the extension directory and properly referenced in manifest.json.
+- **Remapping Keys**: Change `if (e.ctrlKey && e.altKey && e.key.toLowerCase() === "d")` line 58 in contentScript.js and in manifest.json ``"default": "Ctrl+Alt+D"``. 
 - **Extension Not Working**: Check if the extension has the necessary permissions and is activated for the website you're using.
 
 ---
