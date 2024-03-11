@@ -24,7 +24,7 @@
   "commands": {
     "fix-spelling": {
       "suggested_key": {
-        "default": "Ctrl+Alt+D"
+        "default": "Ctrl+Space"
       },
       "description": "Fix Spelling Mistake using keyboard shortcut in Firefox"
     }

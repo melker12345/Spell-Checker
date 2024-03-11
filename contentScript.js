@@ -1,8 +1,18 @@
 /*
 FEATURES TO ADD:
-- User should be able to press ``Esc`` and ``q`` to close the suggestion menu but if the menu is not open, the key press should work as usual.
-- User should be able to press ``Enter`` to select a suggestion but not emmit it's default action. e.i. if the suggestion menu is open, the ``Enter`` key should replace the word in the input field with the selected suggestion but not submit the form. 
-- If no suggestions are available, the suggestion menu should not be displayed. 
+- User should be able to press ``Esc`` and ``q`` to close the suggestion menu but if the menu is not open, the key press should work as usual. [FIXED]
+- If no suggestions are available, the suggestion menu should not be displayed. [FIXED]
+
+- User should be able to press ``Enter`` to select a suggestion but not emmit it's default action. e.i. if the suggestion menu is open, the ``Enter`` key should replace the word in the input field with the selected suggestion but not submit the form or inputfield. [NOT FIXED]
+
+POTENTIAL FEATURES:
+- Improve the suggestion.
+    - Maybe look at whole sentence and suggest a word that fits the sentence.
+        - Will be much slower and more complex.
+    - Find better dictonary.
+        - could include Swedish words as well.
+        - Could include slang words.
+    - NIP (Natural Language Processing).
 
 */
 
@@ -51,7 +61,7 @@ function isSpellCheckEligible(element) {
 document.addEventListener("keydown", function (e) {
     if (!isTextInputField(document.activeElement)) return;
 
-    if (e.ctrlKey && e.altKey && e.key.toLowerCase() === "d") {
+    if (e.ctrlKey && e.key === " ") {
         e.preventDefault();
         const cursorPosition = document.activeElement.selectionStart;
         const textValue = document.activeElement.value;
@@ -67,9 +77,10 @@ function isTextInputField(element) {
     return ['input', 'textarea'].includes(element.tagName.toLowerCase());
 }
 
+
 function getWordToLeftOfCursor(text, position) {
     const leftText = text.substring(0, position);
-    const start = leftText.search(/\S+$/); 
+    const start = leftText.search(/\S+$/);
     const end = position;
     const word = leftText.substring(start, position);
     return { word, start, end };
@@ -159,9 +170,12 @@ function navigateSuggestions(e) {
         e.preventDefault();
         currentIndex = (currentIndex - 1 + suggestionsArray.length) % suggestionsArray.length;
         updateSuggestionHighlight();
-        
+
     } else if (e.key === 'Enter' && currentIndex >= 0) {
+        e.stopPropagation();
+        e.stopImmediatePropagation();
         e.preventDefault();
+        e.preventFocusChange();
         replaceWordInInput(suggestionsArray[currentIndex], wordStartPosition, wordEndPosition);
         closeSuggestionMenu();
 
@@ -200,10 +214,10 @@ function preventFocusChange(e) {
 }
 
 document.addEventListener('keydown', function(event) {
-    if (event.key === "Escape") {
-      closeSuggestionMenu();
-    } else if (event.key === "q"){
-        event.preventDefault();
-        closeSuggestionMenu();
+    if (document.getElementById('suggestionMenu')) {
+        if (event.key === "Escape" || event.key === "q") {
+            event.preventDefault(); // Prevent default action for "q" to avoid any unintended behavior
+            closeSuggestionMenu();
+        }
     }
 });
