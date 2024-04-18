@@ -1,6 +1,6 @@
 # Browser Extension for Spell Checking
 
-This browser extension integrates Typo.js for spell checking within text inputs on web pages using a keyboard shortcut. `Ctrl`+`Alt`+`D` by default; you might have to change it. The shortcut will open a menu with the suggested words if the word is misspelled.
+This browser extension integrates Typo.js for spell checking within text inputs on web pages using a keyboard shortcut. `Ctrl`+` ` by default; you might have to change it. The shortcut will open a menu with the suggested words if the word is misspelled.
 
 Currently, you have to clone the repo and load it as a temporary add-on. To load the add-on, go to `about:debugging#/runtime/this-firefox` and click on `Load Temporary Add-on…`, select the `manifest.json`. Make sure to allow the add-on to run on sites with restrictions.
 
@@ -13,7 +13,7 @@ Currently, you have to clone the repo and load it as a temporary add-on. To load
 
 ## How to Use
 
-1. **Trigger Spell Check**: Place the cursor to the right of a word in a text input field. Press `Ctrl`+`Alt`+`D` to check the spelling of that word. (You might need to change the keybinding).
+1. **Trigger Spell Check**: Place the cursor to the right of a word in a text input field. Press `Ctrl`+` ` to check the spelling of that word. (You might need to change the keybinding).
 2. **Navigate Suggestions**: If there are spelling suggestions, they will be displayed in a menu at the center of the screen. Use the following keys to navigate:
     - `j`: Move down through the list of suggestions.
     - `k`: Move up through the list of suggestions.
