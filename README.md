@@ -26,4 +26,4 @@ This browser extension integrates Typo.js for spell checking within text inputs 
     2. Modern frameworks might cause it to not work due to the Shadow DOM.
 ---
 
-![screenshot](Capture.PNG)
+![screenshot](Demo.png)
