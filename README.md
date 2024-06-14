@@ -1,6 +1,7 @@
+
 # Browser Extension for Spell Checking
 
-This browser extension integrates Typo.js for spell checking within text inputs on web pages using a keyboard shortcut. `Ctrl`+`<Space>` by default. The shortcut will open a menu with the suggested words if the word is misspelled.
+This browser extension integrates Typo.js for spell checking within text inputs on web pages using a keyboard shortcut, `Ctrl`+`Space` by default. The shortcut will open a menu with the suggested words if the word is misspelled.
 
 ## Features
 
@@ -11,15 +12,15 @@ This browser extension integrates Typo.js for spell checking within text inputs 
 
 ## How to Use
 
-1. **Trigger Spell Check**: Place the cursor to the right of a word in a text input field. Press `Ctrl`+` ` to check the spelling of that word. (You might need to change the keybinding).
+1. **Trigger Spell Check**: Place the cursor to the right of a word in a text input field. Press `Ctrl`+`Space` to check the spelling of that word.
 2. **Navigate Suggestions**: If there are spelling suggestions, they will be displayed in a menu at the center of the screen. Use the following keys to navigate:
     - `j`: Move down through the list of suggestions.
     - `k`: Move up through the list of suggestions.
-3. **Select a Suggestion**: To replace the word with a selected suggestion, navigate to the desired suggestion using `j` and `k`, then press `Space`, `Enter` or `Tab` to select it. `Esc` will close the menu. 
+3. **Select a Suggestion**: To replace the word with a selected suggestion, navigate to the desired suggestion using `j` and `k`, then press `Space`, `Enter`, or `Tab` to select it. Press `Esc` to close the menu.
 
 ## Troubleshooting
+
 - **Extension Not Working**: Check if the extension has the necessary permissions and is activated for the website you're using.
-- **Not working in certain input fealds** There are a cuple reasons as to why it dont work in certain input feilds
-    1. Content Security Policy (CSP)
-    2. ShadowDOM currently 
----
+- **Not Working in Certain Input Fields**: There are a couple of cases where the add-on may not work:
+    1. If the website's input field Content Security Policy (CSP) doesn't allow it.
+    2. Modern frameworks might cause it to not work due to the Shadow DOM.
