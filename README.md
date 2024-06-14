@@ -24,3 +24,6 @@ This browser extension integrates Typo.js for spell checking within text inputs 
 - **Not Working in Certain Input Fields**: There are a couple of cases where the add-on may not work:
     1. If the website's input field Content Security Policy (CSP) doesn't allow it.
     2. Modern frameworks might cause it to not work due to the Shadow DOM.
+---
+
+![alt text](https://github.com/melker12345/TypoJS-firefox-addon/blob/main/image.jpg?raw=true)
