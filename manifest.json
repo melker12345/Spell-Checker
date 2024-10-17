@@ -2,7 +2,7 @@
   "manifest_version": 2,
   "name": "SpellCheck Fixer",
   "version": "1.0",
-  "description": "Quickly fix spelling mistakes with Ctrl+Alt+D.",
+  "description": "Quickly fix spelling mistakes with Ctrl+Space.",
   "permissions": [
     "activeTab"
   ],

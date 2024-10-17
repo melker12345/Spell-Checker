@@ -1,21 +1,3 @@
-/*
-FEATURES TO ADD:
-- User should be able to press ``Esc`` and ``q`` to close the suggestion menu but if the menu is not open, the key press should work as usual. [FIXED]
-- If no suggestions are available, the suggestion menu should not be displayed. [FIXED]
-
-- User should be able to press ``Enter`` to select a suggestion but not emmit it's default action. e.i. if the suggestion menu is open, the ``Enter`` key should replace the word in the input field with the selected suggestion but not submit the form or inputfield. [NOT FIXED]
-
-POTENTIAL FEATURES:
-- Improve the suggestion.
-    - Maybe look at whole sentence and suggest a word that fits the sentence.
-        - Will be much slower and more complex.
-    - Find better dictonary.
-        - could include Swedish words as well.
-        - Could include slang words.
-    - NIP (Natural Language Processing).
-
-*/
-
 let typo;
 
 async function initializeTypo() {
@@ -58,6 +40,81 @@ function isSpellCheckEligible(element) {
     return nodeName === "input" || nodeName === "textarea" || isEditable;
 }
 
+function isTextInputField(element) {
+    return ['input', 'textarea'].includes(element.tagName.toLowerCase()) || element.getAttribute('contenteditable') === "true";
+}
+
+function findTextInputElements(root = document) {
+    const inputs = Array.from(root.querySelectorAll('input, textarea, [contenteditable="true"]'));
+    const shadowRoots = Array.from(root.querySelectorAll('*')).filter(el => el.shadowRoot);
+    shadowRoots.forEach(shadowHost => {
+        inputs.push(...findTextInputElements(shadowHost.shadowRoot));
+    });
+    return inputs;
+}
+
+function addSpellCheckEventListeners(root = document) {
+    const inputs = findTextInputElements(root);
+
+    inputs.forEach(input => {
+        if (input.getAttribute('contenteditable') === "true") {
+            input.addEventListener('keydown', function (e) {
+                if (!isTextInputField(document.activeElement)) return;
+
+                if (e.ctrlKey && e.key === " ") {
+                    e.preventDefault();
+                    const selection = window.getSelection();
+                    const cursorPosition = selection.focusOffset;
+                    const textValue = selection.focusNode.textContent;
+                    const wordToLeft = getWordToLeftOfCursor(textValue, cursorPosition);
+
+                    if (wordToLeft.word) {
+                        checkSpellingAndGetSuggestions(wordToLeft.word, wordToLeft.start, wordToLeft.end);
+                    }
+                }
+            });
+        } else {
+            input.addEventListener('keydown', function (e) {
+                if (!isTextInputField(document.activeElement)) return;
+
+                if (e.ctrlKey && e.key === " ") {
+                    e.preventDefault();
+                    const cursorPosition = document.activeElement.selectionStart;
+                    const textValue = document.activeElement.value;
+                    const wordToLeft = getWordToLeftOfCursor(textValue, cursorPosition);
+
+                    if (wordToLeft.word) {
+                        checkSpellingAndGetSuggestions(wordToLeft.word, wordToLeft.start, wordToLeft.end);
+                    }
+                }
+            });
+        }
+    });
+
+    const shadowRoots = Array.from(root.querySelectorAll('*')).filter(el => el.shadowRoot);
+    shadowRoots.forEach(shadowHost => addSpellCheckEventListeners(shadowHost.shadowRoot));
+}
+
+const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+        mutation.addedNodes.forEach((node) => {
+            if (node.nodeType === Node.ELEMENT_NODE) {
+                if (node.shadowRoot) {
+                    // Attach listeners to newly added shadow root
+                    addSpellCheckEventListeners(node.shadowRoot);
+                }
+                // Attach listeners to any newly added eligible inputs or contenteditable within the regular DOM
+                if (node.getAttribute && (node.getAttribute('contenteditable') === "true" || node.tagName === "INPUT" || node.tagName === "TEXTAREA")) {
+                    addSpellCheckEventListeners(node);
+                }
+            }
+        });
+    });
+});
+
+// Start observing the document for added nodes
+observer.observe(document, { childList: true, subtree: true });
+
 document.addEventListener("keydown", function (e) {
     if (!isTextInputField(document.activeElement)) return;
 
@@ -73,17 +130,22 @@ document.addEventListener("keydown", function (e) {
     }
 });
 
-function isTextInputField(element) {
-    return ['input', 'textarea'].includes(element.tagName.toLowerCase());
-}
-
-
 function getWordToLeftOfCursor(text, position) {
-    const leftText = text.substring(0, position);
-    const start = leftText.search(/\S+$/);
-    const end = position;
-    const word = leftText.substring(start, position);
-    return { word, start, end };
+    if (document.activeElement.getAttribute('contenteditable') === "true") {
+        const selection = window.getSelection();
+        const range = selection.getRangeAt(0);
+        const textContent = range.startContainer.textContent;
+        const leftText = textContent.substring(0, range.startOffset);
+        const start = leftText.search(/\S+$/);
+        const word = leftText.substring(start, leftText.length);
+        return { word, start, end: range.startOffset };
+    } else {
+        const leftText = text.substring(0, position);
+        const start = leftText.search(/\S+$/);
+        const end = position;
+        const word = leftText.substring(start, position);
+        return { word, start, end };
+    }
 }
 
 function checkSpellingAndGetSuggestions(word, start, end) {
@@ -153,11 +215,21 @@ function displaySuggestionsMenu(suggestions, start, end) {
 
 function replaceWordInInput(word, start, end) {
     const inputElem = document.activeElement;
-    const originalValue = inputElem.value;
-    const newValue = originalValue.substring(0, start) + word + originalValue.substring(end);
-    inputElem.value = newValue;
-    const newPosition = start + word.length;
-    inputElem.setSelectionRange(newPosition, newPosition);
+    if (inputElem.getAttribute('contenteditable') === "true") {
+        const selection = window.getSelection();
+        const range = selection.getRangeAt(0);
+        range.setStart(range.startContainer, start);
+        range.setEnd(range.startContainer, end);
+        range.deleteContents();
+        range.insertNode(document.createTextNode(word + '\u00A0'));
+        range.collapse(false);
+    } else {
+        const originalValue = inputElem.value;
+        const newValue = originalValue.substring(0, start) + word + " " + originalValue.substring(end);
+        inputElem.value = newValue;
+        const newPosition = start + word.length;
+        inputElem.setSelectionRange(newPosition, newPosition);
+    }
 }
 
 function navigateSuggestions(e) {
@@ -175,16 +247,16 @@ function navigateSuggestions(e) {
         e.stopPropagation();
         e.stopImmediatePropagation();
         e.preventDefault();
-        e.preventFocusChange();
         replaceWordInInput(suggestionsArray[currentIndex], wordStartPosition, wordEndPosition);
         closeSuggestionMenu();
 
-    }else if (e.key === 'Tab' && currentIndex >= 0) {
+    } else if (e.key === 'Tab' && currentIndex >= 0) {
         e.preventDefault();
         replaceWordInInput(suggestionsArray[currentIndex], wordStartPosition, wordEndPosition);
         closeSuggestionMenu();
 
-    }else if (e.key === ' ' && currentIndex >= 0) {
+    } else if (e.key === ' ' && currentIndex >= 0) {
+        e.preventDefault();
         replaceWordInInput(suggestionsArray[currentIndex], wordStartPosition, wordEndPosition);
         closeSuggestionMenu();
     }
