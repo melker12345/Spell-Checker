@@ -72,34 +72,31 @@ Typo = function (dictionary, affData, wordsData, settings) {
 	
 	if (dictionary) {
 		self.dictionary = dictionary;
-		
+	
 		// If the data is preloaded, just setup the Typo object.
 		if (affData && wordsData) {
 			setup();
 		}
-		// Loading data for Chrome extentions.
-		else if (typeof window !== 'undefined' && 'chrome' in window && 'extension' in window.chrome && 'getURL' in window.chrome.extension) {
+		// Loading data for Chrome extensions.
+		else if (typeof window !== 'undefined' && 'chrome' in window && 'runtime' in window.chrome && 'getURL' in window.chrome.runtime) {
 			if (settings.dictionaryPath) {
 				path = settings.dictionaryPath;
-			}
-			else {
+			} else {
 				path = "typo/dictionaries";
 			}
-			
-			if (!affData) readDataFile(chrome.extension.getURL(path + "/" + dictionary + "/" + dictionary + ".aff"), setAffData);
-			if (!wordsData) readDataFile(chrome.extension.getURL(path + "/" + dictionary + "/" + dictionary + ".dic"), setWordsData);
+	
+			if (!affData) readDataFile(chrome.runtime.getURL(path + "/" + dictionary + "/" + dictionary + ".aff"), setAffData);
+			if (!wordsData) readDataFile(chrome.runtime.getURL(path + "/" + dictionary + "/" + dictionary + ".dic"), setWordsData);
 		}
 		else {
 			if (settings.dictionaryPath) {
 				path = settings.dictionaryPath;
-			}
-			else if (typeof __dirname !== 'undefined') {
+			} else if (typeof __dirname !== 'undefined') {
 				path = __dirname + '/dictionaries';
-			}
-			else {
+			} else {
 				path = './dictionaries';
 			}
-			
+	
 			if (!affData) readDataFile(path + "/" + dictionary + "/" + dictionary + ".aff", setAffData);
 			if (!wordsData) readDataFile(path + "/" + dictionary + "/" + dictionary + ".dic", setWordsData);
 		}
