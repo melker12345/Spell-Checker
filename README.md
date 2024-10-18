@@ -28,4 +28,3 @@ This browser extension integrates Typo.js for spell checking within text inputs 
 
 ![screenshot](DemoImg.png)
 
-![screenshot](DemoImg.png)
