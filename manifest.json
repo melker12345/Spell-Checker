@@ -1,8 +1,8 @@
 {
   "manifest_version": 2,
   "name": "SpellCheck Fixer",
-  "version": "1.0",
-  "description": "Quickly fix spelling mistakes with Ctrl+Space.",
+  "version": "2.0",
+  "description": "Quickly fix spelling mistakes with Ctrl+Space - Optimized for speed and accuracy.",
   "permissions": [
     "activeTab"
   ],
@@ -12,14 +12,16 @@
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["typo.js", "contentScript.js"]
+      "js": ["nspell-bundle.js", "contentScript.js"]
     }
   ],
   
   "web_accessible_resources": [
-    "typo.js",
+    "nspell-bundle.js",
+    "nspell-browser.js",
     "en_US.aff",
-    "en_US.dic"
+    "en_US.dic",
+    "spellcheck_worker.js"
   ],
   "commands": {
     "fix-spelling": {
